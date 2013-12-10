@@ -63,8 +63,14 @@ public:
 	GLfloat rotate;
 	GLfloat initx, inity;
 	GLfloat speed;
-	GLfloat leftLegAngle, rightLegAngle;
-	bool leftLegUp, leftLegDown, rightLegUp, rightLegDown;
+	GLfloat leftLegAngle, rightLegAngle, torsoOffset;
+	bool leftLegUp,
+		 leftLegDown,
+		 rightLegUp,
+		 rightLegDown,
+		 torsoUp,
+		 torsoDown;
+
 
 	Human(GLuint &mID);
 	void draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa);
@@ -79,8 +85,9 @@ public:
 	GLuint MatrixID;
 	static GLfloat offset_x, offset_y;
 	GLfloat mouse_speed, mouse_change_x, mouse_change_y;
-	GLdouble newtime, oldtime;
+	GLdouble newtime, oldtime, interframe;
 	static GLuint camera_type;
+
 
 	GLclass(GLuint a_win_width, GLuint a_win_height);
 	void opengl_init();
@@ -98,7 +105,7 @@ public:
 	static GLuint camera_human;
 
 	World(GLclass &_glclass, GLuint _max_humans);
-	void getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat offset);
+	void getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat offset, GLfloat torsoOffset);
 };
 
 

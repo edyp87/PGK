@@ -114,14 +114,17 @@ Cube::~Cube() {
 ////////////// Human class methods ////////////// 
 
 Human::Human(GLuint &mID) : 
-	cube(mID), 
-	move(0),
-	leftLegAngle(0),
-	rightLegAngle(0),
-	rightLegUp(false),
-	rightLegDown(false),
-	leftLegUp(false),
-	leftLegDown(false) {	
+	cube         (mID), 
+	move         (0),
+	leftLegAngle (0.0f),
+	rightLegAngle(0.0f),
+	torsoOffset  (0.0f),
+	rightLegUp   (false),
+	rightLegDown (false),
+	leftLegUp    (false),
+	leftLegDown  (false),
+	torsoUp      (false),
+	torsoDown    (false) {	
 	
 	rotate = static_cast<float>(rand() % 360);// rotate = 0;
 	initx  = static_cast<float>(rand() % 100); 
@@ -145,15 +148,22 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 	}
 	// Rysuj Tors
 	matrixStack.m_currMat = MVPa;
-	//matrixStack.Translate(glm::vec3(10, 0.0f, 10));
 	matrixStack.RotateY( rotate);
-	matrixStack.Translate(glm::vec3(initx, 0.0f, inity));
-	//printf("HUMAN: %f, %f\n", initx, inity);
-	
-	matrixStack.Translate(glm::vec3(0.0f, 0.0f, -move));
+	if(leftLegAngle >= 40 || leftLegAngle <= -40) { // legs dictate torso vertical position
+			torsoUp   = false;
+			torsoDown = true;
+		} else if(leftLegAngle >= -0.01 && leftLegAngle <= 0.01) {
+			torsoUp   = true;
+			torsoDown = false;
+		}
+		if(!torsoUp)        torsoOffset += speed * 0.01f;
+		else if(!torsoDown) torsoOffset -= speed * 0.01f;
+
+	matrixStack.Translate(glm::vec3(initx, 0.0f + torsoOffset, inity));
+
+	matrixStack.Translate(glm::vec3(0.0f, 0.0f, -1.5f*move));
 	
 	matrixStack.Push(); // poprzednia klatka
-	//matrixStack.RotateY(offset_x);
 	matrixStack.Push();
 	matrixStack.Scale(glm::vec3(2.0f, 6.0f, 1.0f));
 	cube.draw(matrixStack.Top());
@@ -181,7 +191,7 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 
 	{ // lewa noga
 		matrixStack.Push();
-		matrixStack.Translate(glm::vec3(1.0f, 0.7f, 0.0f));
+		matrixStack.Translate(glm::vec3(1.0f, 0.7f - torsoOffset, 0.0f));
 		if(leftLegAngle >= 40) {
 			leftLegUp = true;
 			leftLegDown = false;
@@ -202,7 +212,8 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 		{ // lewa piszczel
 			matrixStack.Push();
 			matrixStack.Translate(glm::vec3(0.0f, 3.0f, 0.0f));
-			matrixStack.RotateX(-offset_y);
+			if(leftLegAngle >= 0) matrixStack.RotateX(0);
+			else matrixStack.RotateX(leftLegAngle);
 
 			matrixStack.Push();
 			matrixStack.Scale(glm::vec3(0.7f, 3.7f, 0.6f));
@@ -225,7 +236,7 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 	
 	{ // prawa noga
 		matrixStack.Push();
-		matrixStack.Translate(glm::vec3(-1.0f, 0.7f, 0.0f));
+		matrixStack.Translate(glm::vec3(-1.0f, 0.7f - torsoOffset, 0.0f));
 		
 		if(rightLegAngle >= 40) {
 			rightLegUp = true;
@@ -247,7 +258,8 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 		{ // prawa piszczel
 			matrixStack.Push();
 			matrixStack.Translate(glm::vec3(0.0f, 3.0f, 0.0f));
-			matrixStack.RotateX(offset_y);
+			if(rightLegAngle >= 0) matrixStack.RotateX(0);
+			else matrixStack.RotateX(rightLegAngle);
 
 			matrixStack.Push();
 			matrixStack.Scale(glm::vec3(0.7f, 3.7f, 0.6f));
@@ -291,7 +303,8 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 		{ // lewe przedramie
 			matrixStack.Push();
 			matrixStack.Translate(glm::vec3(0.0f, 2.5f, 0.0f));
-			matrixStack.RotateX(offset_y);
+			if(leftLegAngle >= 0) matrixStack.RotateX(0);
+			else matrixStack.RotateX(-leftLegAngle);
 
 			matrixStack.Push();
 			matrixStack.Scale(glm::vec3(0.4f, 3.0f, 0.4f));
@@ -324,7 +337,8 @@ void Human::draw(GLfloat offset_x, GLfloat offset_y, glm::mat4 &MVPa) {
 		{ // lewe przedramie
 			matrixStack.Push();
 			matrixStack.Translate(glm::vec3(0.0f, 2.5f, 0.0f));
-			matrixStack.RotateX(-offset_y);
+			if(rightLegAngle >= 0) matrixStack.RotateX(0);
+			else matrixStack.RotateX(-rightLegAngle);
 
 			matrixStack.Push();
 			matrixStack.Scale(glm::vec3(0.4f, 3.0f, 0.4f));
@@ -359,7 +373,7 @@ World::World(GLclass &_glclass, GLuint _max_humans) : glclass(_glclass) {
 	Camera = Projection * View * Model;
 }
 
-void World::getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat offset) {
+void World::getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat offset, GLfloat torsoOffset) {
 	fp_x = x;
 	fp_y = y;
 	fp_rotate = rotate;
@@ -383,8 +397,8 @@ void World::getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat o
 				 // Comment:: Here and in subsequent camera case we restore translates and rotations made by the model. 
 				 //           This results in camera coordinates equal (or nearly equal) to this model.
 			View        = glm::lookAt(
-										glm::vec3(fp_x, 10, fp_y - fp_offset + 50), 
-										glm::vec3(fp_x, 5 , fp_y - fp_offset - 50), 
+										glm::vec3(fp_x, 10, fp_y - 1.5f*fp_offset + 50), 
+										glm::vec3(fp_x, 5 , fp_y - 1.5f*fp_offset - 50), 
 										glm::vec3(0,    1 , 0                    ) 
 									);
 			Camera = Projection * View * Model;
@@ -392,8 +406,8 @@ void World::getCameraCoordinates(GLfloat x, GLfloat y, GLfloat rotate, GLfloat o
 			break;
 		case 2 : // first person camera
 			View        = glm::lookAt(
-										glm::vec3(fp_x, 5, fp_y - fp_offset - 2 ), 
-										glm::vec3(fp_x, 5, fp_y - fp_offset - 50), 
+										glm::vec3(fp_x, 7 + torsoOffset, fp_y - 1.5f*fp_offset - 4 ), 
+										glm::vec3(fp_x, 7 + torsoOffset, fp_y - 1.5f*fp_offset - 50), 
 										glm::vec3(0,    1, 0                    ) 
 									);
 			Camera = Projection * View * Model;
@@ -416,6 +430,10 @@ GLclass::GLclass(GLuint a_win_width, GLuint a_win_height) : win_width(a_win_widt
 	offset_x = 0;
 	offset_y = 0;
 	camera_type = 0;
+	interframe = 1;
+	{
+
+	};
 }
 
 void GLclass::opengl_init() {

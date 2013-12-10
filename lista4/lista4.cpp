@@ -28,20 +28,18 @@ int main( void )
 		humans.push_back(new Human(glclass.MatrixID));
 
 	do{
+		glclass.newtime = glfwGetTime();
 		world.getCameraCoordinates(
 			humans[world.camera_human]->initx,
 			humans[world.camera_human]->inity,
 			humans[world.camera_human]->rotate,
-			humans[world.camera_human]->move
+			humans[world.camera_human]->move,
+			humans[world.camera_human]->torsoOffset
 		);
 		glclass.mouse();
-		glclass.newtime = glfwGetTime();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(glclass.programID);
-
-		if(glclass.newtime - glclass.oldtime > 0.01f)
-			glclass.oldtime = glclass.newtime;
 		
 		// here we draw humans ...
 		for(unsigned int i = 0; i < world.max_humans; i++) {
@@ -52,7 +50,11 @@ int main( void )
 			humans[i]->draw(0, 0, MVP);
 		}
 		// ... here surrounding world
-		cube.draw(MVP * glm::translate(0.0f, -6.0f, 0.0f) * glm::scale(300.0f, 300.0f, 300.0f));
+		cube.draw(MVP * glm::translate(0.0f, -6.0f, 0.0f) * glm::scale(350.0f, 350.0f, 350.0f));
+
+		GLdouble frametime = glclass.interframe - (glfwGetTime() - glclass.newtime);
+		if(frametime > 0)
+			std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<long long>(frametime))); // only cpp11 but is cross-platform
 
 		glfwSwapBuffers();
 	} while( glfwGetKey( GLFW_KEY_ESC ) != GLFW_PRESS && glfwGetWindowParam( GLFW_OPENED ) ); //end:dowhile

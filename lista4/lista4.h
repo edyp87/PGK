@@ -18,7 +18,8 @@
 #include <glm-0.9.4.0/glm/ext.hpp>
 #include <shaders.hpp>
 #include <vector>
-
+#include <chrono>
+#include <thread>
 
 extern const GLfloat g_color_buffer_data[3*36];
 extern const GLfloat g_vertex_buffer_data[3*36];
