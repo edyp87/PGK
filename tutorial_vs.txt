@@ -1,0 +1,11 @@
+Tworzenie projektu
+
+1. utworz standardowa aplikacje konsolowa bez prekompilowanych headerow
+2. stworz folder shaders
+   a. dodaj do niego pliki shaders.cpp, shaders.hpp, vertexshader, fragmentshader
+   b. ustaw kolorowanie skladni shaderow
+3. wejdz we wlasciwosci projektu
+   a. Configuration Propeties/VC++ Directoriers/Include Directories    - dodaj ..\..\library\include;
+   b. Configuration Propeties/VC++ Directoriers/Library Directories    - dodaj ..\..\library\lib;
+   c. Configuration Propeties/Linker/Input/Additional Dependencies     - dodaj opengl32.lib;glew32.lib;GLFW.lib;
+4. Do folderu Debug dodac pliki *.dll
